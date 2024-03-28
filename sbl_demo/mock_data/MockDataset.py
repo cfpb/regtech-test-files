@@ -109,7 +109,6 @@ class MockDataset:
 
         # this will be populated as the yaml is parsed. Maps field to Backend object
         spec_dict = {}
-
         for field, field_spec in raw_spec.items():
             logger.debug(f'read_yaml_spec: {field}')
             for _, (backend, backend_kwargs) in enumerate(field_spec.items()):
@@ -124,7 +123,6 @@ class MockDataset:
                     raise ValueError(
                         f"Unknown backend {backend}. Call `register_backend` first."
                     )
-
                 spec_dict[field] = _backend(**backend_kwargs)
 
         return MockDataset(spec=spec_dict)

@@ -1,5 +1,8 @@
 # TODO Add null value support for all backends
-# TODO uid: no suitable backend as of yet
+# TODO 
+uid: 
+  UniqueID:
+    max_generate: 25
 app_date:
   BoundedDatetime:
     min_datetime: "20200101"

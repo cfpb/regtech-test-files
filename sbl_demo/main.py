@@ -3,7 +3,7 @@ import os
 import argparse
 import random
 
-from custom_backends import MultipleResponse
+from custom_backends import MultipleResponse, UniqueID
 
 from mock_data import MockDataset
 
@@ -22,6 +22,8 @@ random.seed()
 
 # register the MultipleResponse backend
 MockDataset.register_backend(MultipleResponse)
+MockDataset.register_backend(UniqueID)
+
 
 mock = MockDataset.read_yaml_spec("sbl.yaml")
 
