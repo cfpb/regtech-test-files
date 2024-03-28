@@ -4,6 +4,7 @@ approximately 170 of them in the file. These are randomly sampled and stitched t
 to generate text with specified lengths."""
 
 
+from importlib.resources import files
 import os
 from numbers import Number
 from random import choices
@@ -16,9 +17,7 @@ from mock_data.backends import BoundedNumerical
 from mock_data.backends.Correlation import Correlation
 
 # read from resources/loremipsum.txt and create a list of ipsum words
-with open(
-    os.path.join(os.path.dirname(__file__), "resources/loremipsum.txt"), "r"
-) as f:
+with open(files('mock_data.backends.resources').joinpath('loremipsum.txt'), "r") as f:
     LOREM_IPSUM_TEXT_CORPUS = list(set(f.read().split(" ")))
 
 

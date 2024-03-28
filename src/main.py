@@ -3,8 +3,6 @@ import os
 import argparse
 import random
 
-from custom_backends import MultipleResponse
-
 from mock_data import MockDataset
 
 parser = argparse.ArgumentParser('datagen')
@@ -19,9 +17,6 @@ logging.basicConfig(level=loglevel)
 os.chdir(os.path.dirname(__file__))
 
 random.seed()
-
-# register the MultipleResponse backend
-MockDataset.register_backend(MultipleResponse)
 
 mock = MockDataset.read_yaml_spec("sbl.yaml")
 

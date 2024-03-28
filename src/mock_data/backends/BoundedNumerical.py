@@ -68,7 +68,7 @@ class BoundedNumerical(AbstractBackendInterface):
                 distributions available within scipy.stats.
         """
 
-        super().__init__(correlation=correlation, dep_field=dep_field, dep_values=dep_values)
+        super().__init__(correlation, dep_field, dep_values)
         if not isinstance(distribution, str):
             raise TypeError(
                 "The supplied value of dist should be a string specifying the name."
@@ -196,17 +196,11 @@ class BoundedNumerical(AbstractBackendInterface):
         # by the desired width (computed as upper bound - lower bound).
         # Then add lower_bound to place values on the scale of
         # [lower_bound, upper_bound].
-        output = (
+        output = np.round((
             shifted_samples / self._dist_width * (self._upper_bound - self._lower_bound)
-        ) + self._lower_bound
+        ) + self._lower_bound, decimals=3)
 
         if self._coerce_to_int:
             output = output.astype(int)
 
-        if (directive):
-            output = output.tolist()
-            for c in range(len(output)):
-                if not self.directive_requires_value(directive[c]):
-                    output[c] = ""
-
-        return output
+        return self.blanks_where_directed(output, directive)

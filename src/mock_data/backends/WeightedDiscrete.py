@@ -40,6 +40,8 @@ class WeightedDiscrete(AbstractBackendInterface):
     def __init__(
         self, population: Union[List[Hashable], Dict[Hashable, Number]],
         correlation: str = Correlation.INDEPENDENT.name,
+        dep_field: str = None,
+        dep_values: List[str] = None,
     ) -> None:
         """Enables sampling from the supplied population dict or list. If a list is
         supplied, each entry is given a weight of 1. Otherwise, the supplied dictionary
@@ -58,7 +60,7 @@ class WeightedDiscrete(AbstractBackendInterface):
                 should be drawn. Each element is equally likely to be drawn.
         """
 
-        super().__init__(correlation)
+        super().__init__(correlation, dep_field, dep_values)
         if isinstance(population, list):
             # change to a dictionary representation with weights of 1
             population = {element: 1 for element in population}
@@ -115,6 +117,6 @@ class WeightedDiscrete(AbstractBackendInterface):
             List[Hashable]: A list of size `size` containing one or more keys from
                 self._population.
         """
-        return random.choices(
-            population=self._population, weights=self._weights, k=size
-        )
+        return self.blanks_where_directed(random.choices(
+            population=self._population, weights=self._weights, k=size),
+            directive)

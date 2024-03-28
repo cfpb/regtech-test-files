@@ -1,5 +1,5 @@
-# TODO Add null value support for all backends
 # TODO uid: no suitable backend as of yet
+# lei:
 app_date:
   BoundedDatetime:
     min_datetime: "20200101"
@@ -30,11 +30,9 @@ ct_credit_product:
       "8": 1 # Other sales-based financing transaction
       "977": 10 # other. This requires filer to specify credit line
       "988": 1 # undetermined -not provided
-# TODO Correlates w/ct_credit_product; conditional null value
+    correlation: "directive"
 ct_credit_product_ff:
   LoremIpsumText:
-    blank_probability: 0.0
-    lower_bound: 1
     upper_bound: 300
     correlation: "dependent"
     dep_field: "ct_credit_product"
@@ -59,27 +57,32 @@ ct_guarantee:
     single_selection_codes:
       - 999
     single_selection_probability: 0.2
-# TODO Correlates w/ct_guarantee; conditional null value
+    correlation: "directive"
 ct_guarantee_ff:
   LoremIpsumText:
-    lower_bound: 1
     upper_bound: 300
-    blank_probability: 0.75 # 75% of these will be blank
+    correlation: "dependent"
+    dep_field: "ct_guarantee"
+    dep_values: ["977"]
 ct_loan_term_flag:
   WeightedDiscrete:
     population:
       "900": 1 # applicable and reported
       "988": 1 #applicable but not provided
       "999": 1 #not applicable
+    correlation: "directive"
 ct_loan_term:
   BoundedNumerical:
     distribution: norm
     lower_bound: 1 #months
     upper_bound: 1200 #100 years will be the longest loan term
     coerce_to_int: True
+    correlation: "dependent"
+    dep_field: "ct_loan_term_flag"
+    dep_values: ["900"]
 credit_purpose:
   MultipleResponse:
-    codes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    codes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 977]
     max_selections: 3
 # Code 1 - Purchase, construction/improvement, or refinance of non-owner-occupied real property
 #	Code 2 - Purchase, construction/improvement, or refinance of owner-occupied real property
@@ -96,19 +99,20 @@ credit_purpose:
       - 988
       - 999
     single_selection_probability: 0.2
-# TODO Correlates w/credit_purpose; conditional null value
+    correlation: "directive"
 credit_purpose_ff:
   LoremIpsumText:
-    lower_bound: 1
     upper_bound: 300
-    blank_probability: 0.75 #more fakes? Might need to adjust based on above.
+    correlation: "dependent"
+    dep_field: "credit_purpose"
+    dep_values: ["977"]
 amount_applied_for_flag:
   WeightedDiscrete:
     population:
       "900": 1 # applicable and reported
       "988": 1 #applicable but not provided
       "999": 1 #not applicable
-# TODO Correlates w/amount_applied_for_flag; conditional null value
+    correlation: "directive"
 amount_applied_for:
   BoundedNumerical:
     distribution: chi2
@@ -116,7 +120,9 @@ amount_applied_for:
     upper_bound: 100000000
     coerce_to_int: True
     df: 10
-# TODO Correlates w/action_taken; conditional null value
+    correlation: "dependent"
+    dep_field: "amount_applied_for_flag"
+    dep_values: ["900"]
 amount_approved:
   BoundedNumerical:
     distribution: chi2
@@ -135,6 +141,7 @@ action_taken:
       "3": 1 # denied
       "4": 1 # withdrawn by the applicant
       "5": 1 # incomplete
+    correlation: "directive"
 # TODO Decide if/how to validate "current reporting period" date
 action_taken_date:
   BoundedDatetime:
@@ -159,12 +166,13 @@ denial_reasons:
     single_selection_codes:
       - 999
     single_selection_probability: 0.2
-# TODO Correlates w/denial_reasons; conditional null value
+    correlation: "directive"
 denial_reasons_ff:
   LoremIpsumText:
-    blank_probability: 0.75 #why are these blank?
-    lower_bound: 1
     upper_bound: 300
+    correlation: "dependent"
+    dep_field: "denial_reasons"
+    dep_values: ["977"]
 pricing_interest_rate_type:
   WeightedDiscrete:
     population:
@@ -175,7 +183,7 @@ pricing_interest_rate_type:
       "5": 1 # initial rate period <= 12 mon, adjustable after
       "6": 1 # initial rate period <= 12 mon, fixed after
       "999": 1 # Not applicable
-# TODO Correlates w/pricing_interest_rate_type; conditional null value
+    correlation: "directive"
 pricing_init_rate_period:
   BoundedNumerical:
     distribution: chi2
@@ -183,20 +191,27 @@ pricing_init_rate_period:
     upper_bound: 1200
     coerce_to_int: True
     df: 10
-# TODO Correlates w/pricing_interest_rate_type; conditional null value
+    correlation: "dependent"
+    dep_field: "pricing_interest_rate_type"
+    dep_values: ["3", "4", "5", "6"]
 pricing_fixed_rate:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.1
     upper_bound: 25.0
     df: 10
-# TODO Correlates w/pricing_interest_rate_type; conditional null value
+    correlation: "dependent"
+    dep_field: "pricing_interest_rate_type"
+    dep_values: ["2", "4", "6"]
 pricing_adj_margin:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.1
     upper_bound: 25.0
     df: 10
+    correlation: "dependent"
+    dep_field: "pricing_interest_rate_type"
+    dep_values: ["1", "3", "5"]
 pricing_adj_index_name:
   WeightedDiscrete:
     population:
@@ -212,46 +227,64 @@ pricing_adj_index_name:
       "10": 1 # Internal Proprietary Index
       "977": 1 # Other
       "999": 1 # Not applicable
-# TODO Correlates w/pricing_interest_rate_type; conditional null value
+    correlation: "directive"
+pricing_adj_index_name_ff:
+  LoremIpsumText:
+    upper_bound: 300
+    correlation: "dependent"
+    dep_field: "pricing_adj_index_name"
+    dep_values: ["977"]
 pricing_adj_index_value:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.1
     upper_bound: 25.0
     df: 10
-# TODO Correlates w/action_taken; conditional null value
+    correlation: "dependent"
+    dep_field: "pricing_interest_rate_type"
+    dep_values: ["1", "3"]
 pricing_origination_charges:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.0
     upper_bound: 1000000.0
     df: 10
-# TODO Correlates w/action_taken; conditional null value
+    correlation: "dependent"
+    dep_field: "action_taken"
+    dep_values: ["1", "2"]
 pricing_broker_fees:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.0
     upper_bound: 1000000.0
     df: 10
-# TODO Correlates w/action_taken; conditional null value
+    correlation: "dependent"
+    dep_field: "action_taken"
+    dep_values: ["1", "2"]
 pricing_initial_charges:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.0
     upper_bound: 1000000.0
     df: 10
+    correlation: "dependent"
+    dep_field: "action_taken"
+    dep_values: ["1", "2"]
 pricing_mca_addcost_flag:
   WeightedDiscrete:
     population:
       "900": 1 # Applicable
       "999": 1 # Not applicable
-# TODO Correlates w/pricing_mca_addcost_flag; conditional null value
+    correlation: "directive"
 pricing_mca_addcost:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.0
     upper_bound: 1000000.0
     df: 10
+    correlation: "dependent"
+    dep_field: "pricing_mca_addcost_flag"
+    dep_values: ["900"]
 pricing_prepenalty_allowed:
   WeightedDiscrete:
     population:
@@ -271,30 +304,42 @@ census_tract_adr_type:
       "2": 1 # Address of borrower's main office
       "3": 1 # Other associated address
       "998": 1 # Not provided
+    correlation: "directive"
 census_tract_number:
   FileRandom:
     file: "ExcelCensusTractReference2010.csv"
     field: "tract_fips"
+    correlation: "dependent"
+    dep_field: "census_tract_adr_type"
+    dep_values: ["1", "2", "3"]
 gross_annual_revenue_flag:
   WeightedDiscrete:
     population:
       "900": 1 # Provided
       "988": 1 # Not provided
+    correlation: "directive"
 gross_annual_revenue:
   BoundedNumerical:
     distribution: chi2
     lower_bound: 0.0
     upper_bound: 100000000.0
     df: 10
+    correlation: "dependent"
+    dep_field: "gross_annual_revenue_flag"
+    dep_values: ["900"]
 naics_code_flag:
   WeightedDiscrete:
     population:
       "900": 1 # Reported
       "988": 1 # Not provided
+    correlation: "directive"
 naics_code:
   FileRandom:
     file: "NAICS_3_digit_2022_Codes.csv"
     field: "2022 NAICS US Code"
+    correlation: "dependent"
+    dep_field: "naics_code_flag"
+    dep_values: ["900"]
 number_of_workers:
   WeightedDiscrete:
     population:
@@ -315,13 +360,16 @@ time_in_business_type:
       "2": 1 # Less than 2 years
       "3": 1 # 2+ years
       "988": 1 # Not provided
-# TODO Correlates w/time_in_business_type; conditional null value
+    correlation: "directive"
 time_in_business:
   BoundedNumerical:
     distribution: norm
     lower_bound: 1 # years
     upper_bound: 100 # years
     coerce_to_int: True
+    correlation: "dependent"
+    dep_field: "time_in_business_type"
+    dep_values: ["1"]
 business_ownership_status:
   MultipleResponse:
     codes: [1, 2, 3, 955]
@@ -341,13 +389,18 @@ num_principal_owners_flag:
     population:
       "900": 1 # Reported
       "988": 1 # Not provided
+    correlation: "directive"
 num_principal_owners:
-  BoundedNumerical:
-    distribution: norm
-    lower_bound: 0
-    upper_bound: 4
-    coerce_to_int: True
-# TODO Correlates w/num_principal_owners; conditional null value
+  WeightedDiscrete:
+    population:
+      "0": 1
+      "1": 2
+      "2": 2
+      "3": 1
+      "4": 1
+    correlation: "cascading_l1"
+    dep_field: "num_principal_owners_flag"
+    dep_values: ["900"]
 po_1_ethnicity:
   MultipleResponse:
     codes: [1, 11, 12, 13, 14, 2, 977]
@@ -365,61 +418,66 @@ po_1_ethnicity:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_1_ethnicity; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["1", "2", "3", "4"]
 po_1_ethnicity_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_1_ethnicity"
+    dep_values: ["977"]
 po_1_race:
   MultipleResponse:
+    # See doc for code descriptions
     codes: [1, 2, 21, 22, 23, 24, 25, 26, 27, 3, 31, 32, 33, 34, 35, 36, 37, 4, 41, 42, 43, 44, 5, 971, 972, 973, 974]
     max_selections: 27
-# Code xxx - see doc
     single_selection_codes:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_1_race; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["1", "2", "3", "4"]
 po_1_race_anai_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_1_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_1_race"
+    dep_values: ["971"]
 po_1_race_asian_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_1_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_1_race"
+    dep_values: ["972"]
 po_1_race_baa_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_1_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_1_race"
+    dep_values: ["973"]
 po_1_race_pi_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
-po_1_gender:
+    correlation: "dependent"
+    dep_field: "po_1_race"
+    dep_values: ["974"]
+po_1_gender_flag:
   WeightedDiscrete:
     population:
       "1": 1 # Applicant responded in ff text field
       "966": 1 # Explicit wish not to provide
       "988": 1 # Not provided
-# TODO Correlates w/po_1_gender; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["1", "2", "3", "4"]
 po_1_gender_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_1_gender_flag"
+    dep_values: ["1"]
 po_2_ethnicity:
   MultipleResponse:
     codes: [1, 11, 12, 13, 14, 2, 977]
@@ -437,61 +495,67 @@ po_2_ethnicity:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_2_ethnicity; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["2", "3", "4"]
 po_2_ethnicity_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_2_ethnicity"
+    dep_values: ["977"]
 po_2_race:
   MultipleResponse:
     codes: [1, 2, 21, 22, 23, 24, 25, 26, 27, 3, 31, 32, 33, 34, 35, 36, 37, 4, 41, 42, 43, 44, 5, 971, 972, 973, 974]
     max_selections: 27
-# Code xxx - see doc
+    # See doc for code descriptions
     single_selection_codes:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_2_race; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["2", "3", "4"]
 po_2_race_anai_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_2_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_2_race"
+    dep_values: ["971"]
 po_2_race_asian_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_2_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_2_race"
+    dep_values: ["972"]
 po_2_race_baa_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_2_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_2_race"
+    dep_values: ["973"]
 po_2_race_pi_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
-po_2_gender:
+    correlation: "dependent"
+    dep_field: "po_2_race"
+    dep_values: ["974"]
+po_2_gender_flag:
   WeightedDiscrete:
     population:
       "1": 1 # Applicant responded in ff text field
       "966": 1 # Explicit wish not to provide
       "988": 1 # Not provided
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["2", "3", "4"]
 # TODO Correlates w/po_2_gender; conditional null value
 po_2_gender_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_2_gender_flag"
+    dep_values: ["1"]
 po_3_ethnicity:
   MultipleResponse:
     codes: [1, 11, 12, 13, 14, 2, 977]
@@ -509,61 +573,66 @@ po_3_ethnicity:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_3_ethnicity; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["3", "4"]
 po_3_ethnicity_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_3_ethnicity"
+    dep_values: ["977"]
 po_3_race:
   MultipleResponse:
     codes: [1, 2, 21, 22, 23, 24, 25, 26, 27, 3, 31, 32, 33, 34, 35, 36, 37, 4, 41, 42, 43, 44, 5, 971, 972, 973, 974]
     max_selections: 27
-# Code xxx - see doc
+    # See doc for code descriptions
     single_selection_codes:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_3_race; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["3", "4"]
 po_3_race_anai_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_3_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_3_race"
+    dep_values: ["971"]
 po_3_race_asian_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_3_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_3_race"
+    dep_values: ["972"]
 po_3_race_baa_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_3_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_3_race"
+    dep_values: ["973"]
 po_3_race_pi_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
-po_3_gender:
+    correlation: "dependent"
+    dep_field: "po_3_race"
+    dep_values: ["974"]
+po_3_gender_flag:
   WeightedDiscrete:
     population:
       "1": 1 # Applicant responded in ff text field
       "966": 1 # Explicit wish not to provide
       "988": 1 # Not provided
-# TODO Correlates w/po_3_gender; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["3", "4"]
 po_3_gender_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_3_gender_flag"
+    dep_values: ["1"]
 po_4_ethnicity:
   MultipleResponse:
     codes: [1, 11, 12, 13, 14, 2, 977]
@@ -581,56 +650,63 @@ po_4_ethnicity:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_4_ethnicity; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["4"]
 po_4_ethnicity_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
+    correlation: "dependent"
+    dep_field: "po_4_ethnicity"
+    dep_values: ["977"]
 po_4_race:
   MultipleResponse:
     codes: [1, 2, 21, 22, 23, 24, 25, 26, 27, 3, 31, 32, 33, 34, 35, 36, 37, 4, 41, 42, 43, 44, 5, 971, 972, 973, 974]
     max_selections: 27
-# Code xxx - see doc
+    # See doc for code descriptions
     single_selection_codes:
       - 966
       - 988
     single_selection_probability: 0.2
-# TODO Correlates w/po_4_race; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["4"]
 po_4_race_anai_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_4_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_4_race"
+    dep_values: ["971"]
 po_4_race_asian_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_4_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_4_race"
+    dep_values: ["972"]
 po_4_race_baa_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/po_4_race; conditional null value
+    correlation: "dependent"
+    dep_field: "po_4_race"
+    dep_values: ["973"]
 po_4_race_pi_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
-# TODO Correlates w/num_principal_owners; conditional null value
-po_4_gender:
+    correlation: "dependent"
+    dep_field: "po_4_race"
+    dep_values: ["974"]
+po_4_gender_flag:
   WeightedDiscrete:
     population:
       "1": 1 # Applicant responded in ff text field
       "966": 1 # Explicit wish not to provide
       "988": 1 # Not provided
-# TODO Correlates w/po_4_gender; conditional null value
+    correlation: "cascading_l2"
+    dep_field: "num_principal_owners"
+    dep_values: ["4"]
 po_4_gender_ff:
   LoremIpsumText:
-    blank_probability: 0.75
-    lower_bound: 1
     upper_bound: 300
+    correlation: "dependent"
+    dep_field: "po_4_gender_flag"
+    dep_values: ["1"]

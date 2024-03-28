@@ -25,6 +25,8 @@ class MultipleResponse(AbstractBackendInterface):
         single_selection_codes: List[int] = [],
         single_selection_probability: float = 0,
         correlation: str = Correlation.INDEPENDENT.name,
+        dep_field: str = None,
+        dep_values: List[str] = None,
         **distribution_kwargs,
     ) -> None:
         """Facilitates generation of multiple response fields. These are fields within
@@ -73,7 +75,7 @@ class MultipleResponse(AbstractBackendInterface):
             ValueError: if max_selections is greater than
         """
 
-        super().__init__(correlation)
+        super().__init__(correlation, dep_field, dep_values)
 
         # TODO: perform validation on input arguments
 
@@ -95,6 +97,7 @@ class MultipleResponse(AbstractBackendInterface):
             coerce_to_int=True,
             **distribution_kwargs,
         )
+
 
     # TODO: go over this docstring and make it clearer
     def generate_samples(self, size: int, directive: List = None) -> List[str]:
@@ -141,4 +144,4 @@ class MultipleResponse(AbstractBackendInterface):
                     # https://docs.python.org/3/library/random.html#random.sample
                     sample_holder.append(";".join(random.sample(self.codes, k=length)))
 
-        return sample_holder
+        return self.blanks_where_directed(sample_holder, directive)
